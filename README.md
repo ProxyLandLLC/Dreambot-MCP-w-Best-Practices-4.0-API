@@ -86,4 +86,5 @@ The **MCP server** runs locally alongside Claude Code. When Claude needs to look
 
 ## Interactive docs
 
-Open [`index.html`](index.html) in your browser for the full documentation with live tool examples and copy-paste code blocks.
+Hit this button:  [Interactive Documentation](https://proxylandllc.github.io/Dreambot-MCP-w-Best-Practices-4.0-API/)  to see the interactive browser! Shows you
+multiple different things such as how to set it up, and different usages! Enjoy!
