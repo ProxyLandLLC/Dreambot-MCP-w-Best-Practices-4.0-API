@@ -57,11 +57,11 @@ async def handle_dreambot_tile_tool(arguments: dict) -> list[TextContent]:
         "",
         "// Walk and wait until within 5 tiles",
         f"Walking.walk(new Tile({x}, {y}, {z}));",
-        f"Sleep.sleepUntil(() -> Players.getLocal().distance(new Tile({x}, {y}, {z})) < 5, 10_000);",
+        f"Sleep.sleepUntil(() -> Players.localPlayer().distance(new Tile({x}, {y}, {z})) < 5, 10_000);",
         "",
         "// Area membership check",
         f"Area area = new Area({x - r}, {y - r}, {x + r}, {y + r});",
-        f"boolean inArea = area.contains(Players.getLocal());",
+        f"boolean inArea = area.contains(Players.localPlayer());",
     ]
 
     return [TextContent(type="text", text="\n".join(lines))]

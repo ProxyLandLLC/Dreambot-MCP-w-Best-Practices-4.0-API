@@ -234,10 +234,13 @@ error("oops");     // error level
 
 ## When to use the JavaDocs MCP tools
 
-Use the MCP tools when you need a method signature, return type, or overloads not covered here:
+Use the MCP tools when you need a method signature, return type, or overloads not covered here.
+
+**Always start with `dreambot_search`** — it searches the full local API index by keyword or natural language and returns ranked results with class, signature, and package. Use the other tools only to drill deeper.
 
 | Goal | Tool | Example arguments |
 |------|------|-------------------|
+| Find any method by keyword or description | `dreambot_search` | `query="check if bank is open"`, `query="Bank.isOpen"` |
 | List all packages | `dreambot_overview` | (none) |
 | List classes in a package | `dreambot_package` | `package="org.dreambot.api.methods.container.impl.bank"` |
 | Get all methods for a class | `dreambot_member` | `package="org.dreambot.api.methods.container.impl.bank"`, `href="Bank.html"` |
