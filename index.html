@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dreambot Scripting MCP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --card:      #161b22;
+      --surface2:  #21262d;
+      --border:    #30363d;
+      --accent:    #58a6ff;
+      --green:     #39d353;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --radius:    8px;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-code: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* ── Nav ─────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-brand span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+    /* ── Hero ────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 6rem 2rem 5rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .tag-pill {
+      display: inline-block;
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 1.75rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 700;
+      line-height: 1.18;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+    }
+
+    .hero h1 .accent { color: var(--accent); }
+
+    .hero p {
+      font-size: 1.125rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.65rem 1.5rem;
+      border-radius: var(--radius);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: filter 0.15s, background 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0d1117;
+    }
+
+    .btn-primary:hover { filter: brightness(1.12); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { background: var(--surface2); }
+
+    /* ── Section shared ──────────────────────────────── */
+    section { padding: 5rem 2rem; }
+
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      margin-bottom: 3rem;
+      font-size: 1rem;
+    }
+
+    /* ── How It Works ────────────────────────────────── */
+    #how { border-bottom: 1px solid var(--border); }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+    }
+
+    @media (max-width: 700px) {
+      .how-grid { grid-template-columns: 1fr; }
+    }
+
+    .how-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+    }
+
+    .how-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .how-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .how-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ── Tools ───────────────────────────────────────── */
+    #tools {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 700px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      .tool-card-wide { grid-column: span 1 !important; }
+    }
+
+    .tool-card-wide { grid-column: span 2; }
+
+    .tool-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .tool-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tool-name {
+      font-family: var(--font-code);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--green);
+      background: rgba(57, 211, 83, 0.1);
+      border: 1px solid rgba(57, 211, 83, 0.25);
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .tool-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── Code blocks ─────────────────────────────────── */
+    .code-wrap {
+      position: relative;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .code-wrap pre {
+      padding: 1rem 1rem 1rem 1rem;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      line-height: 1.65;
+      color: var(--text);
+      margin: 0;
+      padding-right: 4.5rem;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: var(--border);
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .copy-btn:hover { background: var(--surface2); color: var(--text); }
+    .copy-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ── Skill ───────────────────────────────────────── */
+    #skill { border-bottom: 1px solid var(--border); }
+
+    .skill-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    @media (max-width: 800px) {
+      .skill-layout { grid-template-columns: 1fr; }
+    }
+
+    .skill-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .skill-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9375rem;
+      color: var(--text);
+    }
+
+    .skill-list li::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: 0.55em;
+      flex-shrink: 0;
+    }
+
+    .trigger-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.6rem;
+    }
+
+    .trigger-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .trigger-tag {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .skill-right h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Setup ───────────────────────────────────────── */
+    #setup {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .step-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(88, 166, 255, 0.12);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-body h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .step-body p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .step-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      border-left: 2px solid var(--accent);
+      padding-left: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Footer ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-copy {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    /* ── Code comment colours ────────────────────────── */
+    .c-comment { color: #6e7681; }
+    .c-key     { color: #ff7b72; }
+    .c-val     { color: #a5d6ff; }
+    .c-str     { color: #a5d6ff; }
+    .c-kw      { color: #ff7b72; }
+    .c-type    { color: #ffa657; }
+    .c-method  { color: var(--accent); }
+    .c-ok      { color: var(--green); }
+    .c-bad     { color: #f85149; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ───────────────────────────────────────────── -->
+<nav>
+  <a class="nav-brand" href="#">Dreambot <span>MCP</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#skill">Skill</a></li>
+    <li><a href="#setup">Setup</a></li>
+  </ul>
+</nav>
+
+<main>
+<!-- ── Hero ──────────────────────────────────────────── -->
+<section style="padding: 0;">
+  <div class="hero">
+    <div class="tag-pill">DreamBot API 4.0 + Claude</div>
+    <h1>Write DreamBot OSRS scripts.<br><span class="accent">Let AI know the API.</span></h1>
+    <p>A Python MCP server that gives Claude real-time access to DreamBot API 4.0 JavaDocs — so it stops guessing and starts writing correct code.</p>
+    <div class="cta-group">
+      <a class="btn btn-primary" href="#setup">Get Started</a>
+      <a class="btn btn-secondary" href="#tools">View Tools</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ───────────────────────────────────── -->
+<section id="how">
+  <div class="section-inner">
+    <h2 class="section-title">How it works</h2>
+    <p class="section-sub">Two components working together on every script you write.</p>
+    <div class="how-grid">
+
+      <div class="how-card">
+        <span class="how-icon" aria-hidden="true">💬</span>
+        <h3>You ask Claude</h3>
+        <p>Describe what you want your bot to do — withdraw logs, walk to a spot, check NPC state — in plain English.</p>
+      </div>
+
+      <div class="how-card">
+        <span class="how-icon" aria-hidden="true">⚡</span>
+        <h3>Skill activates</h3>
+        <p>The <code style="font-family:var(--font-code);font-size:0.8em;color:var(--accent)">dreambot-scripting</code> skill loads API 4.0 patterns and enforces correct import and method usage before any code is written.</p>
+      </div>
+
+      <div class="how-card">
+        <span class="how-icon" aria-hidden="true">📡</span>
+        <h3>MCP fetches docs</h3>
+        <p>Five MCP tools pull live JavaDoc data — packages, classes, members — so every method call is grounded in the real API, not training guesses.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Tools ──────────────────────────────────────────── -->
+<section id="tools">
+  <div class="section-inner">
+    <h2 class="section-title">MCP Tools</h2>
+    <p class="section-sub">Five tools that cover the full API discovery loop.</p>
+    <div class="tools-grid">
+
+      <!-- dreambot_search -->
+      <div class="tool-card">
+        <div class="tool-header">
+          <span class="tool-name">dreambot_search</span>
+        </div>
+        <p class="tool-desc">Hybrid keyword + semantic search across the full API — start here every time.</p>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="c-comment">// Input</span>
+query: <span class="c-str">"check if bank is open"</span>
+top_k: 8  <span class="c-comment">// optional — max results (default: 8)</span>
+
+<span class="c-comment">// Output</span>
+[Bank]  <span class="c-method">isOpen</span>() → <span class="c-type">boolean</span>
+  → Returns true if the bank interface is open
+  Package: <span class="c-val">org.dreambot.api.methods.container.impl.bank</span></pre>
+        </div>
+      </div>
+
+      <!-- dreambot_overview -->
+      <div class="tool-card">
+        <div class="tool-header">
+          <span class="tool-name">dreambot_overview</span>
+        </div>
+        <p class="tool-desc">Returns the full package list for DreamBot API 4.0 — a top-level map of everything available.</p>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="c-comment">// Input: (none)</span>
+
+<span class="c-comment">// Output</span>
+DreamBot API 4.0 — Package List
+<span class="c-val">org.dreambot.api.methods.container.impl.bank</span>
+<span class="c-val">org.dreambot.api.methods.interactive</span>
+<span class="c-val">org.dreambot.api.methods.walking.impl</span>
+<span class="c-val">org.dreambot.api.methods.skills</span>
+... 40+ packages total</pre>
+        </div>
+      </div>
+
+      <!-- dreambot_package -->
+      <div class="tool-card">
+        <div class="tool-header">
+          <span class="tool-name">dreambot_package</span>
+        </div>
+        <p class="tool-desc">Lists all classes inside a specific package with their JavaDoc href links.</p>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="c-comment">// Input</span>
+package: <span class="c-str">"org.dreambot.api.methods.container.impl.bank"</span>
+
+<span class="c-comment">// Output</span>
+Class Summary:
+  <span class="c-type">Bank</span> (href: Bank.html)
+    → Provides all banking operations
+  <span class="c-type">BankLocation</span> (href: BankLocation.html)
+    → Enum of all bank locations in OSRS</pre>
+        </div>
+      </div>
+
+      <!-- dreambot_member -->
+      <div class="tool-card">
+        <div class="tool-header">
+          <span class="tool-name">dreambot_member</span>
+        </div>
+        <p class="tool-desc">Fetches all methods and fields for a specific class — the full member listing with signatures and descriptions.</p>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="c-comment">// Input</span>
+package: <span class="c-str">"org.dreambot.api.methods.container.impl.bank"</span>
+href:    <span class="c-str">"Bank.html"</span>
+
+<span class="c-comment">// Output (excerpt)</span>
+[<span class="c-kw">static</span> <span class="c-type">boolean</span>] <span class="c-method">isOpen</span>()
+  → Returns true if the bank is open
+[<span class="c-kw">static</span> <span class="c-type">boolean</span>] <span class="c-method">open</span>()
+  → Attempts to open the nearest bank
+[<span class="c-kw">static</span> <span class="c-type">boolean</span>] <span class="c-method">withdraw</span>(<span class="c-type">String</span> name, <span class="c-type">int</span> amount)
+  → Withdraws amount of item by name</pre>
+        </div>
+      </div>
+
+      <!-- dreambot_tile — full width -->
+      <div class="tool-card tool-card-wide">
+        <div class="tool-header">
+          <span class="tool-name">dreambot_tile</span>
+        </div>
+        <p class="tool-desc">Converts an Explv map URL into ready-to-paste DreamBot <code style="font-family:var(--font-code);font-size:0.85em;color:var(--accent)">Tile</code>, <code style="font-family:var(--font-code);font-size:0.85em;color:var(--accent)">Area</code>, and walking snippet.</p>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="c-comment">// Input</span>
+url: <span class="c-str">"https://explv.github.io/?centreX=3165&amp;centreY=3487&amp;centreZ=0&amp;zoom=7"</span>
+
+<span class="c-comment">// Single tile</span>
+<span class="c-kw">new</span> <span class="c-type">Tile</span>(3165, 3487, 0)
+
+<span class="c-comment">// Area (±15 tiles around center)</span>
+<span class="c-kw">new</span> <span class="c-type">Area</span>(3150, 3472, 3180, 3502)
+
+<span class="c-comment">// Walk and wait until within 5 tiles</span>
+<span class="c-type">Walking</span>.<span class="c-method">walk</span>(<span class="c-kw">new</span> <span class="c-type">Tile</span>(3165, 3487, 0));
+<span class="c-type">Sleep</span>.<span class="c-method">sleepUntil</span>(() -&gt; <span class="c-type">Players</span>.<span class="c-method">getLocal</span>().<span class="c-method">distance</span>(<span class="c-kw">new</span> <span class="c-type">Tile</span>(3165, 3487, 0)) &lt; 5, 10_000);</pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Skill ───────────────────────────────────────────── -->
+<section id="skill">
+  <div class="section-inner">
+    <h2 class="section-title">Claude Code Skill</h2>
+    <p class="section-sub">One skill that primes Claude with everything it needs to write correct DreamBot scripts.</p>
+    <div class="skill-layout">
+
+      <!-- Left -->
+      <div class="skill-left">
+        <ul class="skill-list">
+          <li>API 4.0 static-method access pattern (no <code style="font-family:var(--font-code);font-size:0.85em;color:var(--muted)">MethodProvider</code>)</li>
+          <li>Script skeleton with <code style="font-family:var(--font-code);font-size:0.85em;color:var(--muted)">@ScriptManifest</code> and <code style="font-family:var(--font-code);font-size:0.85em;color:var(--muted)">AbstractScript</code></li>
+          <li>State machine structure for clean <code style="font-family:var(--font-code);font-size:0.85em;color:var(--muted)">onLoop()</code></li>
+          <li>Banking, walking, NPC/object interaction patterns</li>
+          <li>Anti-ban timing with <code style="font-family:var(--font-code);font-size:0.85em;color:var(--muted)">Calculations.random()</code></li>
+          <li>When to reach for each MCP tool</li>
+        </ul>
+
+        <div class="trigger-label">Activates on</div>
+        <div class="trigger-tags">
+          <span class="trigger-tag">DreamBot</span>
+          <span class="trigger-tag">OSRS scripting</span>
+          <span class="trigger-tag">RuneScape bot</span>
+          <span class="trigger-tag">bot script</span>
+          <span class="trigger-tag">write a script</span>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="skill-right">
+        <h3>The rule it enforces</h3>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="c-comment">// ✓ API 4.0 — always this</span>
+<span class="c-kw">import</span> <span class="c-val">org.dreambot.api.methods.container.impl.bank.Bank</span>;
+<span class="c-type">Bank</span>.<span class="c-method">isOpen</span>();
+<span class="c-type">Bank</span>.<span class="c-method">open</span>();
+<span class="c-type">Bank</span>.<span class="c-method">withdraw</span>(<span class="c-str">"Logs"</span>, 28);
+
+<span class="c-comment">// ✗ API 3.x — never this</span>
+<span class="c-comment">// getBank().open();  ← MethodProvider is deprecated</span></pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Setup ───────────────────────────────────────────── -->
+<section id="setup">
+  <div class="section-inner">
+    <h2 class="section-title">Setup</h2>
+    <p class="section-sub">Three steps to get Claude writing DreamBot scripts with real API knowledge.</p>
+    <div class="steps">
+
+      <!-- Step 1 -->
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Install dependencies</h3>
+          <p>Clone the repository and install the Python requirements.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>pip install -r requirements.txt</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Register the MCP server</h3>
+          <p>Add the server to your <code style="font-family:var(--font-code);font-size:0.85em;color:var(--accent)">claude_desktop_config.json</code> (or equivalent MCP config file).</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>{
+  <span class="c-key">"mcpServers"</span>: {
+    <span class="c-key">"dreambot-scripting"</span>: {
+      <span class="c-key">"command"</span>: <span class="c-str">"python"</span>,
+      <span class="c-key">"args"</span>: [<span class="c-str">"C:/path/to/Dreambot-Scripting-MCP-main/server.py"</span>]
+    }
+  }
+}</pre>
+          </div>
+          <p class="step-note">Replace the path with your actual install location. The DreamBot API v4 folder must be present in the MCP root before starting the server.</p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Install the skill</h3>
+          <p>Copy the skill file into your Claude Code plugins directory, then restart Claude Code.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre><span class="c-comment"># Source file (repo root)</span>
+dreambot-scripting.skill
+
+<span class="c-comment"># Copy to your Claude Code plugins directory, e.g.:</span>
+~/.claude/plugins/dreambot-scripting.skill</pre>
+          </div>
+          <p class="step-note">After restarting, Claude Code will automatically load the skill whenever you mention DreamBot, OSRS scripting, or writing a bot script.</p>
+          <p class="step-note">On Windows, use <code>%USERPROFILE%\.claude\plugins\</code> instead of <code>~/.claude/plugins/</code>.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────── -->
+<footer>
+  <span class="footer-copy">Dreambot Scripting MCP &mdash; DreamBot API 4.0 tooling for Claude</span>
+  <div class="footer-links">
+    <a href="https://dreambot.org/javadocs/" target="_blank" rel="noopener">DreamBot JavaDocs</a>
+    <a href="https://explv.github.io/" target="_blank" rel="noopener">Explv Map</a>
+  </div>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    var wrap = btn.closest('.code-wrap');
+    var pre = wrap ? wrap.querySelector('pre') : null;
+    var text = pre ? pre.innerText : '';
+    if (!text) return;
+
+    if (navigator.clipboard && location.protocol !== 'file:') {
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+      }).catch(function() {
+        fallbackCopy(btn, text);
+      });
+    } else {
+      fallbackCopy(btn, text);
+    }
+  }
+
+  function fallbackCopy(btn, text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = 'Copied!';
+    } catch (e) {
+      btn.textContent = 'Error';
+    }
+    document.body.removeChild(ta);
+    setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+  }
+</script>
+
+</body>
+</html>

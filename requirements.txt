@@ -1,0 +1,7 @@
+mcp
+requests
+beautifulsoup4
+sentence-transformers
+numpy
+pytest
+pytest-asyncio
