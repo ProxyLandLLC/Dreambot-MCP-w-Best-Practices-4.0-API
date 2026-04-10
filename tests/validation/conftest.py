@@ -85,7 +85,7 @@ NPC_QUERIES = [
 
 # 8 high-traffic classes: (package, href, class_name)
 LIVE_VERIFY_CLASSES = [
-    ("org.dreambot.api.methods.container.impl", "Bank.html", "Bank"),
+    ("org.dreambot.api.methods.container.impl.bank", "Bank.html", "Bank"),
     ("org.dreambot.api.methods.container.impl", "Inventory.html", "Inventory"),
     ("org.dreambot.api.methods.walking.impl", "Walking.html", "Walking"),
     ("org.dreambot.api.methods.interactive", "NPCs.html", "NPCs"),

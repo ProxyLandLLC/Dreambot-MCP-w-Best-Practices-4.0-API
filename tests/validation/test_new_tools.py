@@ -22,9 +22,9 @@ KNOWN_ITEMS = {"bones": 526, "lobster": 379}
 # Known NPC combat levels for spot-checking: {name: combat_level}
 KNOWN_NPCS = {"Hans": 0}
 
-# Valid OSRS world coordinate ranges
+# Valid OSRS world coordinate ranges (includes underground/instance areas)
 OSRS_X_RANGE = (1024, 4000)
-OSRS_Y_RANGE = (2500, 10000)
+OSRS_Y_RANGE = (2500, 13000)
 
 
 # ---------------------------------------------------------------------------
