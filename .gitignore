@@ -1,0 +1,81 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.xml
+nosetests.xml
+coverage.xml
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ── Generated / cached data ────────────────────────────────────────────────────
+index/
+
+# ── IDE / editors ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+*~
+
+# ── OS artifacts ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Claude Code internals (never commit — exposes local paths & permissions) ───
+.claude/
+
+# ── Git worktrees ─────────────────────────────────────────────────────────────
+.worktrees/
+
+# ── Sensitive / secrets ────────────────────────────────────────────────────────
+.env
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+secrets.*.json
+config.local.json
+*.secret
+
+# ── Dev / staging folders (redundant with repo root) ─────────────────────────
+Production Ready/
+MCP Skill/
+
+# ── Redundant archives ────────────────────────────────────────────────────────
+Master API.zip
+
+# ── Personal dev notes inside docs ────────────────────────────────────────────
+docs/superpowers/
