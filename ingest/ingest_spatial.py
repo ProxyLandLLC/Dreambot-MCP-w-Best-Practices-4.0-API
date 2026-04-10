@@ -92,6 +92,7 @@ def ingest_spatial(store: ChromaStore, reset: bool = False) -> dict:
     print(f"  Named locations: {len(location_chunks)} chunks")
 
     npc_chunks = []
+    npcs_data = None
     if os.path.exists(npcs_path):
         npcs_data = _load_json(npcs_path)
         npc_chunks = chunk_npc_locations(npcs_data)
@@ -107,8 +108,7 @@ def ingest_spatial(store: ChromaStore, reset: bool = False) -> dict:
     print(f"  Total spatial: {len(all_chunks)} chunks")
 
     # NPC spatial coverage report
-    if os.path.exists(npcs_path):
-        npcs_data = _load_json(npcs_path)
+    if npcs_data is not None:
         total_npcs = len(npcs_data) if isinstance(npcs_data, list) else len(npcs_data.keys())
         located_npcs = len(npc_chunks)
         coverage_pct = (located_npcs / total_npcs * 100) if total_npcs > 0 else 0

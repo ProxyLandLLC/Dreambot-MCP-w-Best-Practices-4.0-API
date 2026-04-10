@@ -75,19 +75,20 @@ class ChromaStore:
         Lower distance = more similar.
         """
         coll = self.get_collection(collection)
+        count = coll.count()
+
+        if count == 0:
+            return []
 
         # Use query prefix for the query embedding
         query_embedding = self._embed_fn.embed_query(query_text)
 
         kwargs: dict = {
             "query_embeddings": [query_embedding],
-            "n_results": min(n_results, coll.count()) if coll.count() > 0 else 1,
+            "n_results": min(n_results, count),
         }
         if where:
             kwargs["where"] = where
-
-        if coll.count() == 0:
-            return []
 
         results = coll.query(**kwargs)
 

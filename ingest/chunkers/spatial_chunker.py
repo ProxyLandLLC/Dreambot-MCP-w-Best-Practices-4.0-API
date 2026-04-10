@@ -25,12 +25,10 @@ _REGIONS = [
 
 def _classify_region(x: int, y: int) -> str:
     """Classify a tile coordinate into a rough OSRS region."""
-    for name, x_min, _, x_max, _ in _REGIONS:
-        # Use wider ranges for broader matching
-        if x_min - 200 <= x <= x_max + 200:
-            for rname, _, y_min, _, y_max in _REGIONS:
-                if rname == name and y_min - 200 <= y <= y_max + 200:
-                    return name
+    for name, x_min, y_min, x_max, y_max in _REGIONS:
+        if (x_min - 200 <= x <= x_max + 200 and
+                y_min - 200 <= y <= y_max + 200):
+            return name
     return "Unknown"
 
 

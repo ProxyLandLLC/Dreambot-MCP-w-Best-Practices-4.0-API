@@ -58,16 +58,21 @@ def ensure_osrsdb_cached(force: bool = False) -> str:
                 print(f"\r  Downloaded: {downloaded // 1024}KB / {total // 1024}KB ({pct}%)", end="")
     print()
 
-    # Extract data/*.json files
+    # Extract data/*.json files safely
     print("  Extracting JSON data files...")
     with tarfile.open(tgz_path, "r:gz") as tar:
         for member in tar.getmembers():
-            # Only extract data/*.g.json files
             if member.name.startswith("package/data/") and member.name.endswith(".json"):
-                # Extract to cache_dir with flattened path
                 filename = os.path.basename(member.name)
-                member.name = filename
-                tar.extract(member, cache_dir)
+                # Safety: reject path traversal or absolute paths
+                if ".." in filename or os.path.isabs(filename):
+                    continue
+                dest = os.path.join(cache_dir, filename)
+                with tar.extractfile(member) as src:
+                    if src is None:
+                        continue
+                    with open(dest, "wb") as dst:
+                        dst.write(src.read())
                 print(f"    Extracted: {filename}")
 
     # Clean up tarball

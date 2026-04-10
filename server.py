@@ -338,8 +338,9 @@ async def main():
         try:
             retriever = _get_retriever()
             retriever.warm_up()
-        except Exception:
-            # If warm-up fails, fall back to legacy
+        except Exception as e:
+            import sys
+            print(f"RAG warm-up failed, falling back to legacy: {e}", file=sys.stderr)
             _rag_available = False
 
     async with stdio_server() as (read_stream, write_stream):
