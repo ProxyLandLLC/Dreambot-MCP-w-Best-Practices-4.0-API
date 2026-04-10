@@ -37,7 +37,9 @@ def _classify_region(x: int, y: int) -> str:
 def chunk_map_labels(labels_data: list[dict]) -> list[dict]:
     """
     Parse map_labels.json into named_location chunks.
-    Each entry has: name, position {x, y, z}
+    Supports both formats:
+      - {name, worldX, worldY, plane} (current Explv format)
+      - {name, position: {x, y, z}}  (legacy format)
     """
     chunks = []
     for entry in labels_data:
@@ -50,10 +52,16 @@ def chunk_map_labels(labels_data: list[dict]) -> list[dict]:
         if not name:
             continue
 
-        pos = entry.get("position", {})
-        x = pos.get("x", 0)
-        y = pos.get("y", 0)
-        z = pos.get("z", 0)
+        # Support both formats
+        if "worldX" in entry:
+            x = entry.get("worldX", 0)
+            y = entry.get("worldY", 0)
+            z = entry.get("plane", 0)
+        else:
+            pos = entry.get("position", {})
+            x = pos.get("x", 0)
+            y = pos.get("y", 0)
+            z = pos.get("z", 0)
 
         if x == 0 and y == 0:
             continue
@@ -82,43 +90,56 @@ def chunk_map_labels(labels_data: list[dict]) -> list[dict]:
     return chunks
 
 
-def chunk_npc_locations(npcs_data: dict) -> list[dict]:
+def chunk_npc_locations(npcs_data) -> list[dict]:
     """
     Parse osrs-db npcs.g.json into npc_location chunks.
     Only NPCs with known coordinates are included.
+
+    Accepts either a dict {id: npc_data} or list [{npc_data}, ...].
+    Note: The wvanderp/osrs-db npm package typically does NOT include
+    NPC coordinates. This function will return 0 chunks in that case.
     """
     chunks = []
-    for npc_id_str, npc in npcs_data.items():
+
+    # Normalize to iterable of (npc_id, npc_dict) pairs
+    if isinstance(npcs_data, dict):
+        items_iter = ((k, v) for k, v in npcs_data.items())
+    elif isinstance(npcs_data, list):
+        items_iter = ((npc.get("id", i), npc) for i, npc in enumerate(npcs_data))
+    else:
+        return chunks
+
+    for npc_id_raw, npc in items_iter:
         try:
-            npc_id = int(npc_id_str)
+            npc_id = int(npc_id_raw)
         except (ValueError, TypeError):
             continue
 
         name = npc.get("name", "").strip()
-        if not name:
+        if not name or name == "null":
             continue
 
-        # osrs-db stores locations differently depending on version
-        # Try common field names
+        # Try all known coordinate field patterns
         coords = npc.get("coords", [])
         if not coords:
-            # Some versions use 'locations' or nested coordinate fields
-            locations = npc.get("locations", [])
-            if locations and isinstance(locations[0], dict):
-                coords = [(loc.get("x", 0), loc.get("y", 0), loc.get("plane", 0))
-                          for loc in locations if loc.get("x")]
+            coords = npc.get("locations", [])
+        if not coords:
+            # Check for direct x/y fields
+            if "worldX" in npc and npc["worldX"]:
+                coords = [{"x": npc["worldX"], "y": npc["worldY"], "plane": npc.get("plane", 0)}]
 
         if not coords:
             continue
 
         # Take first known coordinate
-        if isinstance(coords[0], dict):
-            x = coords[0].get("x", 0)
-            y = coords[0].get("y", 0)
-            z = coords[0].get("plane", coords[0].get("z", 0))
-        elif isinstance(coords[0], (list, tuple)):
-            x, y = coords[0][0], coords[0][1]
-            z = coords[0][2] if len(coords[0]) > 2 else 0
+        first = coords[0]
+        if isinstance(first, dict):
+            x = first.get("x", first.get("worldX", 0))
+            y = first.get("y", first.get("worldY", 0))
+            z = first.get("plane", first.get("z", 0))
+        elif isinstance(first, (list, tuple)):
+            x, y = first[0], first[1]
+            z = first[2] if len(first) > 2 else 0
         else:
             continue
 
@@ -155,18 +176,30 @@ def chunk_npc_locations(npcs_data: dict) -> list[dict]:
     return chunks
 
 
-def chunk_object_locations(objects_data: dict) -> list[dict]:
+def chunk_object_locations(objects_data) -> list[dict]:
     """
     Parse osrs-db object data into object_location chunks.
     Clusters by object type + approximate region to avoid hundreds of
     individual "Oak tree" chunks.
+
+    Accepts either a dict {id: obj_data} or list [{obj_data}, ...].
+    Note: The wvanderp/osrs-db npm package typically does NOT include
+    object coordinates. This function will return 0 chunks in that case.
     """
     # Group coordinates by object name + rounded centroid
     clusters: dict[str, dict] = {}
 
-    for obj_id_str, obj in objects_data.items():
+    # Normalize to iterable of (obj_id, obj_dict) pairs
+    if isinstance(objects_data, dict):
+        items_iter = objects_data.items()
+    elif isinstance(objects_data, list):
+        items_iter = ((obj.get("id", i), obj) for i, obj in enumerate(objects_data))
+    else:
+        return []
+
+    for obj_id_raw, obj in items_iter:
         try:
-            obj_id = int(obj_id_str)
+            obj_id = int(obj_id_raw)
         except (ValueError, TypeError):
             continue
 

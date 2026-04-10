@@ -1,31 +1,40 @@
 """
 Game data chunker — transforms osrs-db items.g.json and npcs.g.json
 into item chunks and NPC data chunks for the game_data collection.
+
+Data source: wvanderp/osrs-db npm package (arrays of cache-extracted objects).
 """
 
 
-def chunk_items(items_data: dict) -> list[dict]:
+def chunk_items(items_data: list) -> list[dict]:
     """
     Parse osrs-db items.g.json into item chunks.
-    Each item gets base info, trade info, equipment stats, and requirements.
+    Input is an array of item objects from the OSRS cache.
     """
     chunks = []
 
-    for item_id_str, item in items_data.items():
-        try:
-            item_id = int(item_id_str)
-        except (ValueError, TypeError):
+    for item in items_data:
+        item_id = item.get("id")
+        if item_id is None:
             continue
 
         name = item.get("name", "").strip()
         if not name or name == "null" or name == "Null":
             continue
 
-        # Base info
-        examine = item.get("examine", item.get("description", ""))
-        tradeable = item.get("tradeable", item.get("tradeable_on_ge", False))
+        examine = item.get("examine", "")
+        tradeable = item.get("isTradeable", False)
         members = item.get("members", False)
-        equipable = item.get("equipable", item.get("equipable_by_player", False))
+        cost = item.get("cost", 0)
+        stackable = item.get("stackable", 0)
+
+        # Determine if equipable from interfaceOptions containing "Wield"/"Wear"
+        interface_opts = item.get("interfaceOptions", [])
+        equipable = any(
+            opt in ("Wield", "Wear", "Equip")
+            for opt in (interface_opts or [])
+            if opt
+        )
 
         # Build document text
         parts = [f"{name}"]
@@ -34,66 +43,34 @@ def chunk_items(items_data: dict) -> list[dict]:
         parts.append(f"Item ID: {item_id}.")
 
         if tradeable:
-            buy_limit = item.get("buy_limit", "")
-            high_alch = item.get("highalch", item.get("high_alch", ""))
-            low_alch = item.get("lowalch", item.get("low_alch", ""))
-            trade_parts = ["Tradeable on GE."]
-            if buy_limit:
-                trade_parts.append(f"Buy limit: {buy_limit}.")
-            if high_alch:
-                trade_parts.append(f"High alch: {high_alch}.")
-            parts.append(" ".join(trade_parts))
+            parts.append(f"Tradeable. Value: {cost} gp.")
         else:
-            parts.append("Not tradeable.")
+            parts.append(f"Not tradeable. Value: {cost} gp.")
 
-        # Equipment stats
-        slot = ""
         if equipable:
-            equipment = item.get("equipment", {})
-            slot = equipment.get("slot", "")
-            attack_speed = item.get("weapon", {}).get("attack_speed", "")
-
-            equip_parts = []
-            if slot:
-                equip_parts.append(f"Equip slot: {slot}.")
-            if attack_speed:
-                equip_parts.append(f"Attack speed: {attack_speed}.")
-
-            # Attack bonuses
-            for bonus_name in ["attack_stab", "attack_slash", "attack_crush",
-                               "attack_magic", "attack_ranged"]:
-                val = equipment.get(bonus_name, 0)
-                if val and val != 0:
-                    label = bonus_name.replace("attack_", "")
-                    equip_parts.append(f"+{val} {label}.")
-
-            # Strength bonuses
-            for bonus_name in ["melee_strength", "ranged_strength", "magic_damage"]:
-                val = equipment.get(bonus_name, 0)
-                if val and val != 0:
-                    label = bonus_name.replace("_", " ")
-                    equip_parts.append(f"+{val} {label}.")
-
-            if equip_parts:
-                parts.append(" ".join(equip_parts))
-
-        # Requirements
-        requirements = item.get("equipment", {}).get("requirements", {})
-        quest_reqs = item.get("quest_requirements", [])
-        if requirements:
-            req_parts = [f"{skill} {level}" for skill, level in requirements.items()]
-            parts.append(f"Requirements: {', '.join(req_parts)}.")
-        if quest_reqs:
-            if isinstance(quest_reqs, list):
-                quest_str = ";".join(str(q) for q in quest_reqs)
-            else:
-                quest_str = str(quest_reqs)
-            parts.append(f"Quests: {quest_str}.")
-
+            parts.append("Equipable.")
+        if stackable:
+            parts.append("Stackable.")
         if members:
             parts.append("Members only.")
 
+        # Weight (stored in grams in osrs-db)
+        weight = item.get("weight", 0)
+        if weight and weight > 0:
+            parts.append(f"Weight: {weight / 1000:.2f} kg.")
+
         doc_text = " ".join(parts)
+
+        # Determine slot from wearPos1
+        slot = ""
+        wear_pos = item.get("wearPos1", -1)
+        slot_map = {
+            0: "head", 1: "cape", 2: "neck", 3: "weapon",
+            4: "body", 5: "shield", 7: "legs", 9: "hands",
+            10: "feet", 12: "ring", 13: "ammo",
+        }
+        if wear_pos in slot_map:
+            slot = slot_map[wear_pos]
 
         chunks.append({
             "id": f"item:{item_id}",
@@ -103,72 +80,72 @@ def chunk_items(items_data: dict) -> list[dict]:
                 "item_id": item_id,
                 "name": name,
                 "tradeable": bool(tradeable),
-                "equipable": bool(equipable),
-                "slot": slot or "",
+                "equipable": equipable,
+                "slot": slot,
                 "members": bool(members),
-                "quest_req": ";".join(str(q) for q in quest_reqs) if isinstance(quest_reqs, list) else str(quest_reqs or ""),
+                "quest_req": "",
             },
         })
 
     return chunks
 
 
-def chunk_npcs(npcs_data: dict) -> list[dict]:
+def chunk_npcs(npcs_data: list) -> list[dict]:
     """
-    Parse osrs-db npcs.g.json into NPC data chunks (stats/drops).
-    Location data is handled separately by the spatial chunker.
+    Parse osrs-db npcs.g.json into NPC data chunks (stats/actions).
+    Input is an array of NPC objects from the OSRS cache.
     """
     chunks = []
+    seen_ids: set[str] = set()
 
-    for npc_id_str, npc in npcs_data.items():
-        try:
-            npc_id = int(npc_id_str)
-        except (ValueError, TypeError):
+    for npc in npcs_data:
+        npc_id = npc.get("id")
+        if npc_id is None:
             continue
 
         name = npc.get("name", "").strip()
         if not name or name == "null" or name == "Null":
             continue
 
-        combat_level = npc.get("combatLevel", npc.get("combat_level", 0))
-        hitpoints = npc.get("hitpoints", 0)
-        max_hit = npc.get("maxHit", npc.get("max_hit", 0))
-        attack_type = npc.get("attackType", npc.get("attack_type", ""))
+        combat_level = npc.get("combatLevel", 0)
+        actions = npc.get("actions", [])
         members = npc.get("members", False)
+        stats = npc.get("stats", {})
 
-        parts = [f"{name} — Level {combat_level} NPC."]
+        # Extract HP from stats if available
+        hitpoints = 0
+        if isinstance(stats, dict):
+            hitpoints = stats.get("hitpoints", stats.get("hp", 0))
+        elif isinstance(stats, list) and len(stats) > 3:
+            hitpoints = stats[3] if stats[3] else 0
+
+        # Filter null actions
+        action_list = [a for a in (actions or []) if a]
+        actions_str = ", ".join(action_list)
+
+        parts = [f"{name}"]
+        if combat_level:
+            parts[0] += f" — Level {combat_level} NPC."
+        else:
+            parts[0] += " — Non-combat NPC."
+
         if hitpoints:
             parts.append(f"HP: {hitpoints}.")
-        if max_hit:
-            parts.append(f"Max hit: {max_hit}.")
-        if attack_type:
-            if isinstance(attack_type, list):
-                attack_type = ", ".join(str(a) for a in attack_type)
-            parts.append(f"Attack style: {attack_type}.")
-
-        # Notable drops
-        drops = npc.get("drops", [])
-        if drops and isinstance(drops, list):
-            notable = []
-            for drop in drops[:10]:
-                if isinstance(drop, dict):
-                    drop_name = drop.get("name", drop.get("item", ""))
-                    rarity = drop.get("rarity", drop.get("rate", ""))
-                    if drop_name:
-                        entry = str(drop_name)
-                        if rarity:
-                            entry += f" ({rarity})"
-                        notable.append(entry)
-            if notable:
-                parts.append(f"Drops: {', '.join(notable)}.")
-
+        if actions_str:
+            parts.append(f"Actions: {actions_str}.")
         if members:
             parts.append("Members only.")
 
         doc_text = " ".join(parts)
 
+        # Deduplicate NPC IDs (some NPCs have multiple cache entries)
+        chunk_id = f"npc:{npc_id}"
+        if chunk_id in seen_ids:
+            continue
+        seen_ids.add(chunk_id)
+
         chunks.append({
-            "id": f"npc:{npc_id}",
+            "id": chunk_id,
             "document": doc_text,
             "metadata": {
                 "chunk_type": "npc",

@@ -97,7 +97,9 @@ class Retriever:
     """
 
     # Distance threshold for speculative fallback results
-    SPECULATIVE_THRESHOLD = 1.2
+    # nomic-embed-text-v1.5 uses squared L2 distance in ChromaDB,
+    # typical good matches are in 100-200 range
+    SPECULATIVE_THRESHOLD = 250.0
 
     def __init__(self, store: ChromaStore | None = None):
         self.store = store or ChromaStore()
@@ -121,6 +123,7 @@ class Retriever:
 
         if force_collections:
             intent.collections = force_collections
+            intent.intent_type = "forced"
             # Set uniform top_k for forced collections
             intent.top_k = {c: top_k for c in force_collections}
 
