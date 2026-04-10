@@ -1,3 +1,8 @@
+"""
+dreambot_member — Fetches full method summary for a DreamBot API class.
+Enhanced with RAG class overview + method enrichment, falls back to HTML scraping.
+"""
+
 import os
 
 import requests
@@ -17,15 +22,17 @@ def _local_html_path(package: str, href: str) -> str:
     return path if os.path.exists(path) else ""
 
 
-async def handle_dreambot_member_tool(arguments: dict):
+async def handle_dreambot_member_tool(arguments: dict, retriever=None):
     """
     Fetches method/field documentation for a specific class in the DreamBot API.
-    Updated for API 4.0 JavaDocs format (table.memberSummary).
+    When retriever is available, prepends a RAG class overview and enriches
+    with method-level context. Falls back to HTML scraping.
 
     Args:
         arguments: dict with keys:
             'package' — e.g. 'org.dreambot.api.methods.container.impl.bank'
             'href'    — e.g. 'Bank.html'
+        retriever: optional Retriever instance for RAG enrichment
     """
     package = arguments.get("package")
     href = arguments.get("href")
@@ -41,6 +48,29 @@ async def handle_dreambot_member_tool(arguments: dict):
             )
         )]
 
+    class_name = href.replace(".html", "")
+
+    # Try RAG enrichment first
+    rag_overview = ""
+    if retriever:
+        try:
+            result = await retriever.retrieve(
+                query=class_name,
+                force_collections=["api_methods"],
+                extra_filters={"api_methods": {
+                    "$and": [
+                        {"chunk_type": "class_overview"},
+                        {"class_name": class_name},
+                    ]
+                }},
+                top_k=1,
+            )
+            if result.chunks:
+                rag_overview = result.chunks[0].document
+        except Exception:
+            pass  # Fall through to HTML scraping
+
+    # HTML scraping (primary data source for full method list)
     local_path = _local_html_path(package, href)
     source_label = "local"
 
@@ -78,6 +108,12 @@ async def handle_dreambot_member_tool(arguments: dict):
             if len(classes) > 1:
                 results.append(f"Extends: {' -> '.join(classes)}")
 
+        # RAG class overview (richer description)
+        if rag_overview:
+            results.append("")
+            results.append("Overview:")
+            results.append(f"  {rag_overview[:400]}")
+
         results.append("")
 
         # API 4.0: method summary in table.memberSummary
@@ -99,7 +135,6 @@ async def handle_dreambot_member_tool(arguments: dict):
                 if not name_link:
                     continue
 
-                # Full method signature including params
                 full_sig = name_th.find("code")
                 method_text = full_sig.get_text(strip=True) if full_sig else name_link.get_text(strip=True)
 
@@ -123,7 +158,8 @@ async def handle_dreambot_member_tool(arguments: dict):
                     results.append(f"  {li.get_text(strip=True)[:300]}")
 
         if results and len(results) > 2:
-            results.append(f"\n[Source: {source_label}]")
+            source = f"local+RAG" if rag_overview else source_label
+            results.append(f"\n[Source: {source}]")
             return [TextContent(type="text", text="\n".join(results))]
 
         return [TextContent(

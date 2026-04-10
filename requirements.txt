@@ -5,3 +5,6 @@ sentence-transformers
 numpy
 pytest
 pytest-asyncio
+chromadb
+einops
+tqdm

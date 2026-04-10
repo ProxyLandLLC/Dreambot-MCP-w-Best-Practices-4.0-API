@@ -1,15 +1,22 @@
+"""
+dreambot_package — Fetches class/interface/enum listing for a DreamBot package.
+Enhanced with RAG to show method count and description per class.
+"""
+
 import requests
 from bs4 import BeautifulSoup
 from mcp.types import TextContent
 
 
-async def handle_dreambot_package_tool(arguments: dict):
+async def handle_dreambot_package_tool(arguments: dict, retriever=None):
     """
     Fetches the class/interface/enum listing for a specific DreamBot package.
-    Updated for API 4.0 JavaDocs format (table.typeSummary, th.colFirst > a).
+    When retriever is available, enriches each class with method count and
+    one-line description from the api_methods collection.
 
     Args:
-        arguments: dict with key 'package' — e.g. 'org.dreambot.api.methods.container.impl.bank'
+        arguments: dict with key 'package'
+        retriever: optional Retriever instance for RAG enrichment
     """
     package = arguments.get("package")
     if not package:
@@ -38,20 +45,38 @@ async def handle_dreambot_package_tool(arguments: dict):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
+        # Build RAG enrichment map if available
+        rag_info: dict[str, dict] = {}
+        if retriever:
+            try:
+                result = await retriever.retrieve(
+                    query=package,
+                    force_collections=["api_methods"],
+                    extra_filters={"api_methods": {
+                        "$and": [
+                            {"chunk_type": "class_overview"},
+                            {"package": package},
+                        ]
+                    }},
+                    top_k=50,
+                )
+                for chunk in result.chunks:
+                    cls_name = chunk.metadata.get("class_name", "")
+                    if cls_name:
+                        rag_info[cls_name] = {
+                            "method_count": chunk.metadata.get("method_count", 0),
+                            "description": chunk.document[:150],
+                        }
+            except Exception:
+                pass  # Fall through to scrape-only output
+
         results = [f"Package: {package}", "=" * 60]
 
-        # API 4.0: type summary tables use class 'typeSummary'
-        # Each section (Class Summary, Enum Summary, Interface Summary) is a separate table
         tables = soup.find_all("table", {"class": "typeSummary"})
-
-        if not tables:
-            # Fallback: try older format
-            tables = soup.find_all("table", {"class": "typeSummary"})
 
         for table in tables:
             caption = table.find("caption")
             if caption:
-                # Caption text is like "Class Summary\xa0" — clean it up
                 section_name = caption.get_text(strip=True).replace("\xa0", "").strip()
             else:
                 section_name = "Types"
@@ -64,7 +89,6 @@ async def handle_dreambot_package_tool(arguments: dict):
                 href = a.get("href", "")
                 name = a.get_text(strip=True)
 
-                # Description from the adjacent colLast td
                 row = th.parent
                 desc_td = row.find("td", {"class": "colLast"})
                 desc = ""
@@ -73,15 +97,24 @@ async def handle_dreambot_package_tool(arguments: dict):
                     desc = block.get_text(strip=True) if block else desc_td.get_text(strip=True)
 
                 entry = f"  {name} (href: {href})"
+
+                # RAG enrichment: method count
+                enrichment = rag_info.get(name, {})
+                method_count = enrichment.get("method_count", 0)
+                if method_count:
+                    entry += f"  [{method_count} methods]"
+
                 if desc:
                     entry += f"\n    {desc}"
+                elif enrichment.get("description"):
+                    entry += f"\n    {enrichment['description']}"
                 entries.append(entry)
 
             if entries:
                 results.append(f"\n{section_name}:")
                 results.extend(entries)
 
-        if len(results) > 2:  # more than just the header lines
+        if len(results) > 2:
             results.append(
                 f"\nUse dreambot_member with package='{package}' and href='ClassName.html' "
                 "to see method signatures."
