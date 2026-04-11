@@ -88,3 +88,33 @@ The **MCP server** runs locally alongside Claude Code. When Claude needs to look
 
 Hit this button:  [Interactive Documentation](https://proxylandllc.github.io/Dreambot-MCP-w-Best-Practices-4.0-API/)  to see the interactive browser! Shows you
 multiple different things such as how to set it up, and different usages! Enjoy!
+
+---
+
+## Testing
+
+Two-layer automated test harness under `tests/`:
+
+- **`tests/protocol/`** — fast pytest suite that drives `server.py` over stdio via the official MCP Python client. Asserts on tool responses directly, no LLM. Run:
+
+  ```
+  pytest tests/protocol/
+  ```
+
+- **`tests/scenarios/`** — Claude Agent SDK harness that runs 31 YAML scenarios through a live Claude session with the `dreambot-scripting` skill and the MCP server. Requires `ANTHROPIC_API_KEY` in the environment. Run:
+
+  ```
+  python -m tests.scenarios.runner                 # all, parallel (4 workers)
+  python -m tests.scenarios.runner --sequential    # serial, easier to debug
+  python -m tests.scenarios.runner -k tile         # filter by id substring
+  python -m tests.scenarios.runner --workers 8     # custom pool size
+  python -m tests.scenarios.runner --no-judge      # skip LLM judge entirely
+  ```
+
+  Reports land in `tests/scenarios/reports/<timestamp>/` (gitignored). Each
+  run writes a `summary.md` plus a per-scenario JSON file with the full
+  transcript, tool calls, assertion results, and (where enabled) the Sonnet
+  4.6 judge verdict.
+
+Design doc: `docs/superpowers/specs/2026-04-10-scenario-test-harness-design.md`
+Plan: `docs/superpowers/plans/2026-04-10-scenario-test-harness.md`
