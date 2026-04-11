@@ -1,0 +1,36 @@
+{
+  "scenario_id": "_smoke",
+  "description": "Harness smoke test - confirms Claude session + MCP server reachable",
+  "passed": true,
+  "assertion_results": [
+    {
+      "name": "tool_called:dreambot_search",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "response_matches:Bank.*open",
+      "passed": true,
+      "message": ""
+    }
+  ],
+  "judge_verdict": null,
+  "transcript_error": null,
+  "tool_calls": [
+    {
+      "name": "ToolSearch",
+      "args": {
+        "query": "select:mcp__dreambot__dreambot_search",
+        "max_results": 1
+      }
+    },
+    {
+      "name": "dreambot_search",
+      "args": {
+        "query": "Bank.open",
+        "top_k": 3
+      }
+    }
+  ],
+  "final_text": "The primary signature is **`public static boolean open()`** in `org.dreambot.api.methods.container.impl.bank.Bank` \u2014 it takes no arguments and returns a `boolean` indicating whether the bank was successfully opened (there's also an overload that accepts a nullable `BankLocation` parameter to open a specific bank)."
+}
