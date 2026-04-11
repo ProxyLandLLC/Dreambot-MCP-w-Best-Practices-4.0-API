@@ -1,0 +1,11 @@
+id: tile_explv_url
+description: Parse an Explv URL into a Tile
+prompt: |
+  Convert this Explv URL into a DreamBot Tile using dreambot_tile:
+  https://explv.github.io/?centreX=3208&centreY=3220&centreZ=0&zoom=11
+assertions:
+  tool_called:
+    - dreambot_tile
+  response_contains:
+    - "3208"
+    - "3220"

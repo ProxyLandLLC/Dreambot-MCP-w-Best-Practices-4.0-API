@@ -1,0 +1,9 @@
+id: item_rune_scimitar
+description: Equipment item lookup
+prompt: |
+  What's the item ID for a Rune scimitar? Use dreambot_item.
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "[Rr]une [Ss]cimitar"

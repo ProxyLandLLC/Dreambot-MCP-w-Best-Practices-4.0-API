@@ -1,0 +1,9 @@
+id: item_noted_coal
+description: Coal lookup
+prompt: |
+  What's the item ID for coal in OSRS? Use dreambot_item.
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "[Cc]oal"

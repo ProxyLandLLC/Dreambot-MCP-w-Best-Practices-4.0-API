@@ -1,0 +1,9 @@
+id: npc_banker
+description: Multiple banker NPCs
+prompt: |
+  Show me a few banker NPCs using dreambot_npc.
+assertions:
+  tool_called:
+    - dreambot_npc
+  response_matches:
+    - "[Bb]anker"

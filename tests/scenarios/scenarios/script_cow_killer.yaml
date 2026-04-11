@@ -1,0 +1,25 @@
+id: script_cow_killer
+description: Combat cows and loot hides at Lumbridge
+prompt: |
+  Write a DreamBot 4.0 Java script that fights cows at Lumbridge cow pen,
+  loots cowhides, and banks them at Lumbridge bank when inventory is full.
+  Use @ScriptManifest and AbstractScript with onLoop. Before writing, use
+  dreambot_npc to find the Cow NPC and dreambot_location to find Lumbridge.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_npc
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "[Cc]ow"
+  response_not_contains:
+    - "MethodProvider"
+judge:
+  rubric: |
+    1. @ScriptManifest + AbstractScript + onLoop returning int.
+    2. Modern static API calls from org.dreambot.api.* (no MethodProvider).
+    3. Handles combat state: attack cow, wait for death, loot cowhide.
+    4. Banks when inventory is full, returns to cows.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6

@@ -1,0 +1,10 @@
+id: api_search_walking_walk
+description: Walking.walk query returns Tile overload
+prompt: |
+  How do I walk to a Tile in DreamBot? Show me the method via dreambot_search.
+assertions:
+  tool_called:
+    - dreambot_search
+  response_matches:
+    - "Walking.*walk"
+    - "Tile"

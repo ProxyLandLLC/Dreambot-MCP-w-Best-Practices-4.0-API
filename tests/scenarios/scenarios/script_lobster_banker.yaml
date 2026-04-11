@@ -1,0 +1,30 @@
+id: script_lobster_banker
+description: End-to-end lobster fishing + banking script
+prompt: |
+  Write a complete DreamBot API 4.0 Java script that fishes lobsters at a
+  coastal fishing spot, walks to the nearest bank when inventory is full,
+  deposits the lobsters, and walks back. Use AbstractScript with @ScriptManifest
+  and onLoop. Before writing, use the dreambot_item tool to get the Lobster
+  item id and dreambot_location to find a fishing spot. Show full Java code.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "[Bb]ank"
+    - "[Ll]obster"
+  response_not_contains:
+    - "MethodProvider"
+judge:
+  rubric: |
+    Evaluate the generated DreamBot 4.0 script against these criteria:
+    1. Uses @ScriptManifest annotation and extends AbstractScript.
+    2. Implements onLoop() returning an int (milliseconds).
+    3. Uses static DreamBot 4.0 API calls (Bank, Inventory, Walking, etc.)
+       from org.dreambot.api.* packages - NOT inherited MethodProvider methods.
+    4. Has some state/step logic to interleave fishing, walking, banking.
+    5. Uses Lobster item id obtained from the dreambot_item tool.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6

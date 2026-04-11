@@ -1,0 +1,23 @@
+id: script_varrock_tea_thief
+description: Thieving tea stalls in Varrock
+prompt: |
+  Write a DreamBot 4.0 Java script that thieves from the Varrock tea stall
+  and eats food when health is low. Use dreambot_location to find Varrock.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_location
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "[Tt]ea"
+  response_not_contains:
+    - "MethodProvider"
+judge:
+  rubric: |
+    1. @ScriptManifest + AbstractScript + onLoop.
+    2. Thieves from tea stall using GameObjects + interact.
+    3. HP check + eat food logic.
+    4. Modern DreamBot 4.0 API.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6

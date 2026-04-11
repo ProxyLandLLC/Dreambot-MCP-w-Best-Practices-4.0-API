@@ -1,0 +1,10 @@
+id: api_search_ambiguous
+description: Vague query still routes to API methods
+prompt: |
+  How do I open a bank in DreamBot? Use dreambot_search.
+assertions:
+  tool_called:
+    - dreambot_search
+  response_matches:
+    - "[Bb]ank"
+    - "open"

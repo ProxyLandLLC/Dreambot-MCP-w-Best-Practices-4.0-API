@@ -1,0 +1,11 @@
+id: item_lobster
+description: Lobster has id 379
+prompt: |
+  What is the item ID for Lobster in OSRS? Use dreambot_item.
+assertions:
+  tool_called:
+    - dreambot_item
+  response_contains:
+    - "379"
+  response_matches:
+    - "[Ll]obster"

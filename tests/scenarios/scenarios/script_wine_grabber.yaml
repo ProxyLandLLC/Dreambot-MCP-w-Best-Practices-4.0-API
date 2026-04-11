@@ -1,0 +1,24 @@
+id: script_wine_grabber
+description: Thieving wines of zamorak
+prompt: |
+  Write a DreamBot 4.0 Java script that telegrabs Wine of Zamorak from the
+  chaos temple south of Falador. Assume the player has law runes and air
+  runes. Use dreambot_item to look up Wine of Zamorak first.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "Wine"
+  response_not_contains:
+    - "MethodProvider"
+judge:
+  rubric: |
+    1. @ScriptManifest + AbstractScript + onLoop.
+    2. Uses Magic API to cast Telekinetic Grab on the wine.
+    3. Handles item lookup and targeting correctly.
+    4. Modern DreamBot 4.0 API only.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6

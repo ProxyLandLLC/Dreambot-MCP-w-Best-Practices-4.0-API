@@ -1,0 +1,9 @@
+id: location_varrock_west_bank
+description: RAG lookup for Varrock West bank
+prompt: |
+  What are the coordinates for Varrock West bank? Use dreambot_location.
+assertions:
+  tool_called:
+    - dreambot_location
+  response_contains:
+    - "Varrock"

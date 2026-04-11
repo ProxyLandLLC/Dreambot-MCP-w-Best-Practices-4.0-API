@@ -1,0 +1,9 @@
+id: npc_unknown
+description: Unknown NPC handled gracefully
+prompt: |
+  Find the NPC called "Xzzqqwerty" using dreambot_npc.
+assertions:
+  tool_called:
+    - dreambot_npc
+  response_not_contains:
+    - "Traceback"

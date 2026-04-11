@@ -1,0 +1,25 @@
+id: script_iron_miner
+description: Iron mining with power-drop
+prompt: |
+  Write a DreamBot 4.0 Java script that mines iron ore and drops the ore
+  when the inventory is full (power mining). Use dreambot_item to look up
+  Iron ore. Use @ScriptManifest and AbstractScript.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "[Ii]ron"
+    - "(dropAll|drop\\()"
+  response_not_contains:
+    - "MethodProvider"
+judge:
+  rubric: |
+    1. @ScriptManifest + AbstractScript + onLoop.
+    2. Mines iron rock (GameObjects.closest) and drops ore.
+    3. Uses Inventory.dropAll or similar, Players.getLocal() for checks.
+    4. Modern DreamBot 4.0 API throughout.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6
