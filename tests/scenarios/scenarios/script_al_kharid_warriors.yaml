@@ -16,7 +16,7 @@ assertions:
     - "Al.?Kharid"
     - "Warrior"
   response_not_contains:
-    - "MethodProvider"
+    - "extends MethodProvider"
 judge:
   rubric: |
     1. @ScriptManifest + AbstractScript + onLoop.

@@ -69,6 +69,9 @@ def _build_options() -> ClaudeAgentOptions:
         "You are a DreamBot OSRS scripting assistant using the DreamBot API 4.0.\n"
         "Always prefer the dreambot_* MCP tools to look up real API signatures, "
         "item IDs, NPC data, and map coordinates rather than guessing.\n\n"
+        "IMPORTANT: Output all code DIRECTLY in your chat response inside a "
+        "Java code block. DO NOT write code to files, DO NOT use the Write, "
+        "Edit, or Bash tools. The grader only sees your chat text.\n\n"
         "## Skill: dreambot-scripting\n\n"
         + skill_text
     )
@@ -84,6 +87,17 @@ def _build_options() -> ClaudeAgentOptions:
             }
         },
         allowed_tools=allowed_tools,
+        disallowed_tools=[
+            "Write",
+            "Edit",
+            "Bash",
+            "Read",
+            "Glob",
+            "Grep",
+            "NotebookEdit",
+            "WebFetch",
+            "WebSearch",
+        ],
         permission_mode="bypassPermissions",
         setting_sources=[],
         cwd=str(REPO_ROOT),

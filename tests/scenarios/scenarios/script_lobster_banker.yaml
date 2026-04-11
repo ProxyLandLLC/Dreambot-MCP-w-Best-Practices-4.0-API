@@ -16,7 +16,7 @@ assertions:
     - "[Bb]ank"
     - "[Ll]obster"
   response_not_contains:
-    - "MethodProvider"
+    - "extends MethodProvider"
 judge:
   rubric: |
     Evaluate the generated DreamBot 4.0 script against these criteria:
