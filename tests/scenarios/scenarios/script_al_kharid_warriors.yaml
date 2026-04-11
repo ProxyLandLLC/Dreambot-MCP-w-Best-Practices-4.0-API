@@ -1,0 +1,27 @@
+id: script_al_kharid_warriors
+description: Combat at Al Kharid warriors with food management
+prompt: |
+  Write a DreamBot 4.0 Java script that fights Al Kharid warriors, eats
+  lobsters when health is low, and banks for more food at the Al Kharid
+  bank when out. Use dreambot_npc to find the warriors and dreambot_item
+  for the lobster item id.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_npc
+    - dreambot_item
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "Al.?Kharid"
+    - "Warrior"
+  response_not_contains:
+    - "extends MethodProvider"
+judge:
+  rubric: |
+    1. @ScriptManifest + AbstractScript + onLoop.
+    2. Combat + eat + bank state machine.
+    3. Uses NPCs + Inventory + Bank + Walking APIs from org.dreambot.api.*.
+    4. Player HP threshold logic, proper eat/bank fallbacks.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6

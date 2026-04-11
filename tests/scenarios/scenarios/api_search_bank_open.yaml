@@ -1,0 +1,11 @@
+id: api_search_bank_open
+description: Exact query returns Bank.open()
+prompt: |
+  What is the method signature for Bank.open in the DreamBot API?
+  Use the dreambot_search tool to look it up.
+assertions:
+  tool_called:
+    - dreambot_search
+  response_matches:
+    - "Bank.*open"
+    - "boolean"

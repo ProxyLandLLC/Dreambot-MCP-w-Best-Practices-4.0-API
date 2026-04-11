@@ -1,0 +1,10 @@
+id: location_unknown
+description: Unknown location handled gracefully
+prompt: |
+  Where is the Flibbertigibbet Tavern in OSRS? Use dreambot_location. If
+  it doesn't exist, say so.
+assertions:
+  tool_called:
+    - dreambot_location
+  response_not_contains:
+    - "Traceback"

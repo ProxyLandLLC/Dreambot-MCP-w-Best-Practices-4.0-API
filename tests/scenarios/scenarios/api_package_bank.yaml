@@ -1,0 +1,12 @@
+id: api_package_bank
+description: Package listing for bank package includes core classes
+prompt: |
+  What classes are in the package
+  `org.dreambot.api.methods.container.impl.bank`?
+  Use the dreambot_package tool.
+assertions:
+  tool_called:
+    - dreambot_package
+  response_contains:
+    - "Bank"
+    - "BankLocation"

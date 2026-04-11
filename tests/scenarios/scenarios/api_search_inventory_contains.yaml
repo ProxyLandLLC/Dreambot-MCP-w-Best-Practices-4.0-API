@@ -1,0 +1,9 @@
+id: api_search_inventory_contains
+description: Inventory.contains query returns overloads
+prompt: |
+  Show me the Inventory.contains method and its overloads. Use dreambot_search.
+assertions:
+  tool_called:
+    - dreambot_search
+  response_matches:
+    - "Inventory.*contains"

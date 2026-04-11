@@ -1,0 +1,13 @@
+id: tile_draynor_bank_coords
+description: Build a Tile from known Draynor bank coords
+prompt: |
+  Give me the Java code for a DreamBot Tile at x=3092, y=3245, z=0.
+  Use the dreambot_tile tool.
+assertions:
+  tool_called:
+    - dreambot_tile
+  response_contains:
+    - "3092"
+    - "3245"
+  response_matches:
+    - "Tile"

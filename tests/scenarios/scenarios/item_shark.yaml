@@ -1,0 +1,9 @@
+id: item_shark
+description: Shark item lookup
+prompt: |
+  What's the item ID for a Shark in OSRS? Use dreambot_item.
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "[Ss]hark"

@@ -1,0 +1,9 @@
+id: item_ambiguous_ring
+description: Ring query disambiguates between many rings
+prompt: |
+  Show me a few ring items and their IDs using dreambot_item.
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "[Rr]ing"

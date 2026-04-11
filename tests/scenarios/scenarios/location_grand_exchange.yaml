@@ -1,0 +1,10 @@
+id: location_grand_exchange
+description: Grand Exchange lookup
+prompt: |
+  Where is the Grand Exchange in OSRS? Give me the centre Tile.
+  Use dreambot_location.
+assertions:
+  tool_called:
+    - dreambot_location
+  response_matches:
+    - "[Gg]rand [Ee]xchange"

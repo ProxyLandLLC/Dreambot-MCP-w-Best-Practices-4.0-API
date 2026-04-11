@@ -1,0 +1,25 @@
+id: script_tree_chopper
+description: Woodcutting and banking logs
+prompt: |
+  Write a DreamBot 4.0 Java script that chops regular trees and banks the
+  logs when inventory is full. Use dreambot_item first to look up Logs.
+  Use @ScriptManifest and AbstractScript with onLoop.
+timeout_seconds: 240
+assertions:
+  tool_called:
+    - dreambot_item
+  response_matches:
+    - "AbstractScript"
+    - "onLoop"
+    - "[Tt]ree"
+    - "[Ll]og"
+  response_not_contains:
+    - "extends MethodProvider"
+judge:
+  rubric: |
+    1. @ScriptManifest + AbstractScript + onLoop.
+    2. Chops a tree (GameObjects.closest, interact) and banks logs.
+    3. Uses Inventory.isFull or similar for banking trigger.
+    4. Modern org.dreambot.api.* API only.
+    Score 0-10. Pass if >= 6.
+  pass_threshold: 6

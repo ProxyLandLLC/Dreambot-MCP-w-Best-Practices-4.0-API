@@ -1,0 +1,10 @@
+id: _smoke
+description: Harness smoke test - confirms Claude session + MCP server reachable
+prompt: |
+  Use the dreambot_search tool to look up "Bank.open" and tell me the method
+  signature in one sentence.
+assertions:
+  tool_called:
+    - dreambot_search
+  response_matches:
+    - "Bank.*open"

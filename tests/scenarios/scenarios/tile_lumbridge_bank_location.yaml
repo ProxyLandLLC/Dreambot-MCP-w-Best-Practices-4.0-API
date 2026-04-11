@@ -1,0 +1,9 @@
+id: tile_lumbridge_bank_location
+description: Regression - Lumbridge bank must return bank tile, not generic centre
+prompt: |
+  Where is the Lumbridge bank in OSRS? Give me the Tile coordinates.
+  Use the dreambot_location tool.
+assertions:
+  tool_called:
+    - dreambot_location
+  python_hook: lumbridge_bank

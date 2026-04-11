@@ -1,0 +1,12 @@
+id: api_member_bank_class
+description: Member listing for Bank class includes open and close
+prompt: |
+  Show me all methods on the Bank class in package
+  `org.dreambot.api.methods.container.impl.bank`. Use dreambot_member
+  (href is Bank.html).
+assertions:
+  tool_called:
+    - dreambot_member
+  response_contains:
+    - "open"
+    - "close"

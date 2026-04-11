@@ -8,3 +8,7 @@ pytest-asyncio
 chromadb
 einops
 tqdm
+
+claude-agent-sdk
+pyyaml
+pydantic

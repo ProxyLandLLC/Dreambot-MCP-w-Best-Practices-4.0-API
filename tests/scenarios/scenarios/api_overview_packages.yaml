@@ -1,0 +1,9 @@
+id: api_overview_packages
+description: Overview returns full package list
+prompt: |
+  List the DreamBot API packages. Use the dreambot_overview tool.
+assertions:
+  tool_called:
+    - dreambot_overview
+  response_contains:
+    - "org.dreambot.api"

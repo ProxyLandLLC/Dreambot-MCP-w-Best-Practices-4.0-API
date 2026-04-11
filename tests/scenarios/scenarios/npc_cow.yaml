@@ -1,0 +1,9 @@
+id: npc_cow
+description: Cow NPC lookup
+prompt: |
+  Show me the Cow NPC and its combat level. Use dreambot_npc.
+assertions:
+  tool_called:
+    - dreambot_npc
+  response_matches:
+    - "[Cc]ow"

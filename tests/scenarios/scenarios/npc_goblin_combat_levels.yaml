@@ -1,0 +1,9 @@
+id: npc_goblin_combat_levels
+description: Regression - goblin query includes combat-level variants
+prompt: |
+  List a few Goblin NPC variants and their combat levels. Use dreambot_npc.
+assertions:
+  tool_called:
+    - dreambot_npc
+  response_matches:
+    - "[Gg]oblin"

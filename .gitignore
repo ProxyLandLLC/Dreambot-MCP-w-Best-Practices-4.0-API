@@ -79,3 +79,8 @@ Master API.zip
 
 # ── Personal dev notes inside docs ────────────────────────────────────────────
 docs/superpowers/
+
+
+# Scenario test harness output
+tests/scenarios/reports/*
+!tests/scenarios/reports/.gitkeep

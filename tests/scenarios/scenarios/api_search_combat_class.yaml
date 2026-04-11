@@ -1,0 +1,10 @@
+id: api_search_combat_class
+description: Finds the Combat class
+prompt: |
+  Find the Combat class in the DreamBot API using dreambot_search and
+  list a few of its methods.
+assertions:
+  tool_called:
+    - dreambot_search
+  response_contains:
+    - "Combat"
